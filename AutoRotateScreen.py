@@ -1,7 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-import os
-import commands
+import subprocess
 import time
 
 # Buffer value to increase hysteresis if needed
@@ -9,24 +8,25 @@ buffer = 0
 
 while True:
 
-    angleX = commands.getoutput(
-             'cat /sys/bus/iio/devices/iio\:device*/in_incli_x_raw')
-    angleY = commands.getoutput(
-             'cat /sys/bus/iio/devices/iio\:device*/in_incli_y_raw')
+    angleX = subprocess.check_output(
+             "cat /sys/bus/iio/devices/iio:device*/in_incli_x_raw", shell=True)
+    angleY = subprocess.check_output(
+             "cat /sys/bus/iio/devices/iio:device*/in_incli_y_raw", shell=True)
 
     angleX = int(angleX)
     angleY = int(angleY)
 
     if abs(angleY) < abs(angleX) - buffer:
         if angleX >= 0:
-            os.system('xrandr -o normal')
+            subprocess.call(["xrandr", "-o", "normal"])
         else:
-            os.system('xrandr -o inverted')
+            subprocess.call(["xrandr", "-o", "inverted"])
 
     if abs(angleY) > abs(angleX) + buffer:
         if angleY >= 0:
-            os.system('xrandr -o left')
+            subprocess.call(["xrandr", "-o", "left"])
         else:
-            os.system('xrandr -o right')
+            subprocess.call(["xrandr", "-o", "right"])
 
     time.sleep(1)
+
