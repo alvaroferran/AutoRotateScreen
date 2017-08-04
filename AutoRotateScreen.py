@@ -3,6 +3,9 @@
 import subprocess
 import time
 
+orientation = ["normal", "inverted", "left", "right"]
+statePrev = -1
+
 # Buffer value to increase hysteresis if needed
 buffer = 0
 
@@ -18,15 +21,19 @@ while True:
 
     if abs(angleY) < abs(angleX) - buffer:
         if angleX >= 0:
-            subprocess.call(["xrandr", "-o", "normal"])
+            state = 0
         else:
-            subprocess.call(["xrandr", "-o", "inverted"])
+            state = 1
 
     if abs(angleY) > abs(angleX) + buffer:
         if angleY >= 0:
-            subprocess.call(["xrandr", "-o", "left"])
+            state = 2
         else:
-            subprocess.call(["xrandr", "-o", "right"])
+            state = 3
 
+    if state != statePrev:
+        subprocess.call(["xrandr", "-o", orientation[state]])
+
+    statePrev = state
     time.sleep(1)
 
