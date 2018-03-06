@@ -4,12 +4,11 @@ import subprocess
 from subprocess import check_call, check_output
 import time
 
+# Enable touchpad rotation by uncommenting the following line.
+# touchpad = "SynPS/2 Synaptics TouchPad"
+
 orientation = ["normal", "inverted", "left", "right"]
 statePrev = -1
-
-# set your touchscreen and touchpad names here, see xinput's output
-touchscreen = "ELAN2514:00 04F3:259B"
-touchpad = "SynPS/2 Synaptics TouchPad"
 
 # Buffer value to increase hysteresis if needed
 buffer = 0
@@ -27,32 +26,24 @@ while True:
     if abs(angleY) < abs(angleX) - buffer:
         if angleX >= 0:
             state = 0
+            transval = "1 0 0 0 1 0 0 0 1"
         else:
             state = 1
+            transval = "-1 0 1 0 -1 1 0 0 1"
 
     if abs(angleY) > abs(angleX) + buffer:
         if angleY >= 0:
             state = 2
+            transval = "0 -1 1 1 0 0 0 0 1"
         else:
             state = 3
+            transval = "0 1 0 -1 0 1 0 0 1"
 
     if state != statePrev:
         subprocess.call(["xrandr", "-o", orientation[state]])
-
-        if orientation[state] == "normal":
-            transval = "1 0 0 0 1 0 0 0 1"
-        if orientation[state] == "left" :
-            transval = "0 -1 1 1 0 0 0 0 1"
-        if orientation[state] == "right" :
-            transval = "0 1 0 -1 0 1 0 0 1"
-        if orientation[state] == "inverted":
-            transval = "-1 0 1 0 -1 1 0 0 1"
-
-        if touchscreen != "":
-            check_call(['xinput', 'set-prop', touchscreen, 'Coordinate Transformation Matrix'] + transval.split())
-
-        if touchpad != "":
-            check_call(['xinput', 'set-prop', touchpad, 'Coordinate Transformation Matrix'] + transval.split())
+        if 'touchpad' in globals():
+            check_call(['xinput', 'set-prop', touchpad,
+                        'Coordinate Transformation Matrix'] + transval.split())
 
     statePrev = state
     time.sleep(1)
