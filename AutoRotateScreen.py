@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
 import subprocess
+from subprocess import check_call, check_output
 import time
 
 orientation = ["normal", "inverted", "left", "right"]
 statePrev = -1
+
+# set your touchscreen and touchpad names here, see xinput's output
+touchscreen = "ELAN2514:00 04F3:259B"
+touchpad = "SynPS/2 Synaptics TouchPad"
 
 # Buffer value to increase hysteresis if needed
 buffer = 0
@@ -33,6 +38,21 @@ while True:
 
     if state != statePrev:
         subprocess.call(["xrandr", "-o", orientation[state]])
+
+        if orientation[state] == "normal":
+            transval = "1 0 0 0 1 0 0 0 1"
+        if orientation[state] == "left" :
+            transval = "0 -1 1 1 0 0 0 0 1"
+        if orientation[state] == "right" :
+            transval = "0 1 0 -1 0 1 0 0 1"
+        if orientation[state] == "inverted":
+            transval = "-1 0 1 0 -1 1 0 0 1"
+
+        if touchscreen != "":
+            check_call(['xinput', 'set-prop', touchscreen, 'Coordinate Transformation Matrix'] + transval.split())
+
+        if touchpad != "":
+            check_call(['xinput', 'set-prop', touchpad, 'Coordinate Transformation Matrix'] + transval.split())
 
     statePrev = state
     time.sleep(1)
